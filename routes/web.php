@@ -12,12 +12,27 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/home1',function (){
     return view('client.home');
 });
+
+//Auth::routes(['register' => false]);
+Route::get('admin', 'Auth\LoginController@showLoginForm')->name('admin');
+Route::post('login', 'Auth\LoginController@login')->name('login');
+Route::get('logout', 'Auth\LoginController@logout');
+
+//Reset password
+Route::get('password/reset','Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
+Route::post('password/email','Auth\ForgotPasswordController@sendResetLinkEmail')->name('password.email');
+Route::post('password/reset','Auth\ResetPasswordController@reset')->name('password.update');
+Route::get('password/reset/{token}','Auth\ResetPasswordController@showResetForm')->name('password.reset');
+
+//Email Verificaton Route
+Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
+Route::get('email/verify/{id}', 'Auth\VerificationController@verify')->name('verification.verify');
+Route::get('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
+
+//Admin after login
+Route::get('dashboard','Admin@showDashboard');
+
+Route::get('/home', 'HomeController@index')->name('home');
+

@@ -1,0 +1,1 @@
+helllo {{Auth::user()->name}}
