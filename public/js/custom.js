@@ -5,7 +5,7 @@ jQuery(document).ready(function() {
     }, function() {
         $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(200);
     });
-    // slick slider call 
+    // slick slider call
     $('.slick_slider').slick({
         dots: true,
         infinite: true,
@@ -16,7 +16,7 @@ jQuery(document).ready(function() {
         autoplaySpeed: 2000,
         cssEase: 'linear'
     });
-    // slick slider2 call 
+    // slick slider2 call
     $('.slick_slider2').slick({
         dots: true,
         infinite: true,

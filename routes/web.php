@@ -18,7 +18,7 @@ Route::get('/', function () {
 //Auth::routes(['register' => false]);
 Route::get('admin', 'Auth\LoginController@showLoginForm')->name('admin');
 Route::post('login', 'Auth\LoginController@login')->name('login');
-Route::get('logout', 'Auth\LoginController@logout');
+Route::get('logout', 'Auth\LoginController@logout')->name('logout');
 
 //Reset password
 Route::get('password/reset','Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
@@ -32,7 +32,17 @@ Route::get('email/verify/{id}', 'Auth\VerificationController@verify')->name('ver
 Route::get('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
 
 //Admin after login
-Route::get('dashboard','Admin@showDashboard');
+Route::get('/dashboard','Admin@showDashboard')->name('dashboard');
+Route::get('post/all','Post@allPost')->name('post.all');
+Route::get('post/add','Post@addPost')->name('post.add');
+
+//Work with categories
+Route::get('post/category','Post@allCategory')->name('post.category.all');
+Route::get('post/category/getAll','Post@getAllCategory')->name('post.category.getAll');
+Route::get('post/category/getOne/{id}','Post@getOneCategory')->name('post.category.getOne');
+Route::post('post/category/update','Post@updateCategory')->name('post.category.update');
+Route::post('post/category/add','Post@addCategory')->name('post.category.add');
+Route::post('post/category/delete','Post@deleteCategory')->name('post.category.delete');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
