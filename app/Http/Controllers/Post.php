@@ -14,23 +14,36 @@ class Post extends Controller
         $this->middleware('auth');
     }
 
-    //display all post page
+    /**
+     * display all post page
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     function allPost(){
         return view('admin.post.allPost');
     }
 
-    //display add post page
+    /**
+     * display add post page
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     function addPost(){
         return view('admin.post.addPost');
     }
 
-    //display all category page
+    /**
+     * display all category page
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     function allCategory(){
         return view('admin.post.allCategory');
     }
 
+    /**
+     * display all category page
+     * @return false|string
+     */
     function getAllCategory(){
-        $category = Category::all();
+        $category = Category::all()->except(1);
         return json_encode($category);
     }
 
@@ -90,16 +103,26 @@ class Post extends Controller
         return response()->json($arr);
     }
 
+    /**
+     * Delete category
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     function deleteCategory(Request $request){
         $arr = ['status' => false];
         $cat = Category::find($request->id);
         $res = $cat->delete();
         if($res == true){
             $arr['status'] = true;
-            $arr['message'] = $cat->category . ' has deleted.';
+            $arr['message'] = $cat->category . ' has been deleted.';
         }else{
             $arr['message'] = 'Can not delete ' . $cat->category. '!';
         }
         return response()->json($arr);
+    }
+
+    function fillCatSelect(){
+
+//        return response()->json($cat);
     }
 }

@@ -206,7 +206,8 @@ div#success {
 }
 #confirm button {
     display: inline-block;
-    width: 80px;
+    /*width: 80px;*/
+    margin-left: 10px;
 }
 #confirm .message {
     text-align: left;

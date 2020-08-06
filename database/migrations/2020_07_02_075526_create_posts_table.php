@@ -19,7 +19,10 @@ class CreatePostsTable extends Migration
             $table->string('description');
             $table->string('slug')->unique();
             $table->string('feature');
-            $table->timestamps();
+            $table->integer('category_id')->default(1);
+            $table->foreign('category_id')->references('id')->on('categories');
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'));
         });
     }
 

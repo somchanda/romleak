@@ -69,6 +69,17 @@
             </div>
             <div>
                 <div>
+                    <label>Parent </label><span id="parent-info"
+                                              class="info"></span>
+                </div>
+                <div>
+                    <select name="parent" id="parent" class="inputBox">
+
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div>
                     <label>Created at: </label><span id="created-at-info"
                                                   class="info"></span>
                     <label id="created-at"></label>
@@ -93,6 +104,7 @@
     <script src="{{asset('assets/plugins/dataTables/jquery.dataTables.js')}}"></script>
     <script src="{{asset('assets/plugins/dataTables/dataTables.bootstrap.js')}}"></script>
     <script>
+
         $(document).ready(function () {
             /**
              * Define load all category function
@@ -120,6 +132,7 @@
                             '</thead>' +
                             '<tbody>';
                         let tr = '';
+                        let option='<option value="">None</option>';
                         for (const value of data) {
                             tr +='<tr>'+
                                 '<td>'+value.id+'</td>'+
@@ -128,6 +141,7 @@
                                 '<td>'+value.created_at+'</td>'+
                                 '<td><button id="btn_update" class="button-small"><span class="glyphicon glyphicon-edit"></span> Update</button> / <button id="btn_delete" class="button-small-danger"><span class="glyphicon glyphicon-trash"></span> Delete</button></td>'
                                 +'</tr>';
+                            option += '<option value="'+ value.id +'">'+ value.category +'</option>';
                         }
 
                         table += tr;
@@ -136,6 +150,7 @@
 
                         $('#category-table-wrap').html(table);
                         $('#category-table').dataTable();
+                        $('#parent').html(option);
                     },
                     error: function (data) {
                         console.log('error retrieving data')
@@ -260,6 +275,9 @@
                 return event.keyCode || event.charCode || event.which ;
             }
 
+            /**]
+             * Save category when user submit form
+             */
             $('#save').click(function (e) {
                 e.preventDefault();
                 $.ajaxSetup({
@@ -328,7 +346,7 @@
              * Delete category by ID
              * @param id
              */
-            function deleteCategory(id) {
+            function fillCatSelect(id) {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -367,6 +385,25 @@
                         setTimeout(function () {
                             eMessage.slideUp();
                         },5000);
+                    }
+                });
+            }
+
+            function findChild(id) {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                $.ajax({
+                    url: '{{url("/post/category/fillCatSelect")}}',
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+
                     }
                 });
             }
