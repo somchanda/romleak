@@ -132,16 +132,14 @@
                             '</thead>' +
                             '<tbody>';
                         let tr = '';
-                        let option='<option value="">None</option>';
                         for (const value of data) {
                             tr +='<tr>'+
-                                '<td>'+value.id+'</td>'+
+                                '<td><span class="level-1"></span>'+value.id+'</td>'+
                                 '<td>'+value.category+'</td>'+
                                 '<td>'+value.slug+'</td>'+
                                 '<td>'+value.created_at+'</td>'+
-                                '<td><button id="btn_update" class="button-small"><span class="glyphicon glyphicon-edit"></span> Update</button> / <button id="btn_delete" class="button-small-danger"><span class="glyphicon glyphicon-trash"></span> Delete</button></td>'
+                                '<td><button id="btn_update" class="button-small" title="Update"><span class="glyphicon glyphicon-edit"></span></button> / <button id="btn_delete" class="button-small-danger" title="Delete"><span class="glyphicon glyphicon-trash"></span></button></td>'
                                 +'</tr>';
-                            option += '<option value="'+ value.id +'">'+ value.category +'</option>';
                         }
 
                         table += tr;
@@ -150,7 +148,6 @@
 
                         $('#category-table-wrap').html(table);
                         $('#category-table').dataTable();
-                        $('#parent').html(option);
                     },
                     error: function (data) {
                         console.log('error retrieving data')
@@ -163,6 +160,7 @@
              * @param id
              */
             function loadOneCategory(id) {
+                fillCatSelect(id);
                 $.ajaxSetup({
                    headers: {
                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -181,6 +179,7 @@
                        $('#category').val(data.category);
                        $('#slug').val(data.slug);
                        $('#created-at').html(data.created_at);
+                       $('#parent option[value=' + data.parent_id + ']').attr('selected', 'selected');
                        $("#popup").show();
                    },
                    error:function (jqXHR, textStatus, errorThrown) {
@@ -197,12 +196,12 @@
             loadCategory();
             closePopup();
 
-
             /**
              * Show popup form when user click add button
              */
             $(document).on('click','#btn_add',function () {
                 $("#popup").show();
+                fillCatSelect();
             });
 
             /**
@@ -263,6 +262,7 @@
                 let popup = $('#popup');
                 popup.hide();
                 popup.find('input:text, input:hidden').val('');
+                popup.find('#parent').html('');
                 popup.find('#created-at').html('');
             }
 
@@ -346,7 +346,7 @@
              * Delete category by ID
              * @param id
              */
-            function fillCatSelect(id) {
+            function deleteCategory(id) {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -389,18 +389,21 @@
                 });
             }
 
-            function findChild(id) {
+            /**
+             * To fill parent category select
+             */
+            function fillCatSelect(id) {
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     }
                 });
                 $.ajax({
-                    url: '{{url("/post/category/fillCatSelect")}}',
+                    url: '{{url("/post/category/fillCatSelect")}}/'+id,
                     type: 'get',
                     dataType: 'json',
                     success: function (data) {
-                        console.log(data);
+                        $('#parent').html(data.option);
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
 

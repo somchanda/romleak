@@ -91,8 +91,10 @@ div#success {
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-right: -50%;
-    transform: translate(-50%, -50%);
+    /*margin-right: -50%;*/
+    margin-top: -60px;
+    margin-left: -60px;
+    /*transform: translate(-50%, -50%);*/
 }
 
 .overlay {
@@ -246,4 +248,11 @@ div#success {
 .error-msg {
     color: #D8000C;
     background-color: #FFBABA;
+}
+.level-1{
+    width: 30px;
+    height: 1px;
+    border-bottom: 1px solid black;
+    display: inline-block;
+    margin-right: 5px;
 }

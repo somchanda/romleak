@@ -12,7 +12,8 @@ class CategoryTableSeeder extends Seeder
     public function run()
     {
         DB::table('categories')->insert([
-            'category' => 'uncategorized',
+            'id' =>'1',
+            'category' => 'Uncategorized',
             'slug' =>'uncategorized'
         ]);
 

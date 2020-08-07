@@ -44,7 +44,8 @@ class Post extends Controller
      */
     function getAllCategory(){
         $category = Category::all()->except(1);
-        return json_encode($category);
+
+        return response()->json($category);
     }
 
     /**
@@ -53,7 +54,7 @@ class Post extends Controller
      */
     function getOneCategory($id){
         $category = Category::find($id);
-        return json_encode($category);
+        return response()->json($category);
     }
 
     /**
@@ -72,6 +73,7 @@ class Post extends Controller
             $cat = Category::find($request->id);
             $cat->category = $request->category;
             $cat->slug = $request->slug;
+            $cat->parent_id = $request->parent;
             $cat->save();
         }else if($validator->fails()){
             $arr = $validator->messages();
@@ -96,6 +98,7 @@ class Post extends Controller
             $cat = new Category();
             $cat->category = $request->category;
             $cat->slug = $request->slug;
+            $cat->parent_id = $request->parent;
             $cat->save();
         }else if($validator->fails()){
             $arr = $validator->messages();
@@ -111,6 +114,14 @@ class Post extends Controller
     function deleteCategory(Request $request){
         $arr = ['status' => false];
         $cat = Category::find($request->id);
+        $find_sub_cat = Category::where('parent_id', $request->id)->get();
+
+        //To clear sub category
+        foreach ($find_sub_cat as $value){
+            $sub_cat = Category::find($value->id);
+            $sub_cat->parent_id = 0;
+            $sub_cat->save();
+        }
         $res = $cat->delete();
         if($res == true){
             $arr['status'] = true;
@@ -121,8 +132,18 @@ class Post extends Controller
         return response()->json($arr);
     }
 
-    function fillCatSelect(){
+    function categoryTree( &$option,$id, $parent_id = 0, $sub_mark = ''){
+        $cat = Category::where('parent_id', $parent_id)->where('id', '!=', $id)->orderBy('id')->get();
+        foreach ($cat as $value){
+            $option .= '<option value="'. $value->id .'">'. $sub_mark.$value->category .'</option>';
+            $this->categoryTree($option, $id, $value->id, $sub_mark.'---');
+        }
+    }
 
-//        return response()->json($cat);
+    function fillCatSelect($id){
+        $option = '<option value="0">None</option>';
+        $this->categoryTree($option,$id);
+        $arr = ['option' => $option];
+        return response()->json($arr);
     }
 }
