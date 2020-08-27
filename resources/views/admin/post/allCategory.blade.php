@@ -29,8 +29,9 @@
                                 <span id="msg"></span>
                             </div>
                             <hr>
-                            <div class="table-responsive" id="category-table-wrap">
-                            </div>
+                            <!-- <div class="table-responsive" id="category-table-wrap">
+                            </div> -->
+                            <div id="category-table"></div>
                         </div>
                     </div>
                 </div>
@@ -110,49 +111,61 @@
              * Define load all category function
              */
             function loadCategory(){
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
+                let table = new Tabulator("#category-table", {
+                    layout:"fitColumns",
+                    ajaxURL:"/post/category/getAll",
+                    placeholder:"No Data Set",
+                    pagination: "local",
+                    paginationSize:10,
+                    paginationSizeSelector:[5,10,50,100],
+                    dataTree:true,
+                    dataTreeStartExpanded:true,
+                    columns:[
+                        {title:"Category", field:"category", responsive:0}, //never hide this column
+                        {title:"Slug", field:"slug", responsive:2}, //hide this column first
+                        {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
+                        {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
+                        {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                        {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                    ],
                 });
-                $.ajax({
-                    url: '{{url("/post/category/getAll")}}',
-                    type: 'get',
-                    dataType:'json',
-                    success:function (data) {
-                        let table = '<table class="table table-striped table-bordered table-hover" id="category-table">' +
-                            '<thead>' +
-                            '<tr>' +
-                            '<th>ID</th>' +
-                            '<th>Category</th>' +
-                            '<th>slug</th>' +
-                            '<th>Date</th>' +
-                            '<th>Action</th>' +
-                            '</tr>' +
-                            '</thead>' +
-                            '<tbody>';
-                        let tr = '';
-                        for (const value of data) {
-                            tr +='<tr>'+
-                                '<td><span class="level-1"></span>'+value.id+'</td>'+
-                                '<td>'+value.category+'</td>'+
-                                '<td>'+value.slug+'</td>'+
-                                '<td>'+value.created_at+'</td>'+
-                                '<td><button id="btn_update" class="button-small" title="Update"><span class="glyphicon glyphicon-edit"></span></button> / <button id="btn_delete" class="button-small-danger" title="Delete"><span class="glyphicon glyphicon-trash"></span></button></td>'
-                                +'</tr>';
-                        }
+                {{--$.ajaxSetup({--}}
+                {{--    headers: {--}}
+                {{--        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')--}}
+                {{--    }--}}
+                {{--});--}}
+                {{--$.ajax({--}}
+                {{--    url: '{{url("/post/category/getAll")}}',--}}
+                {{--    type: 'get',--}}
+                {{--    dataType:'json',--}}
+                {{--    success:function (data) {--}}
+                {{--        let tr = '';--}}
+                {{--        for (const value of data) {--}}
+                {{--            tr +='<tr>'+--}}
+                {{--                '<td>'+value.id+'</td>'+--}}
+                {{--                '<td>'+value.category+'</td>'+--}}
+                {{--                '<td>'+value.slug+'</td>'+--}}
+                {{--                '<td>'+value.created_at+'</td>'+--}}
+                {{--                '<td><button id="btn_update" class="button-small" title="Update"><span class="glyphicon glyphicon-edit"></span></button> / <button id="btn_delete" class="button-small-danger" title="Delete"><span class="glyphicon glyphicon-trash"></span></button></td>'--}}
+                {{--                +'</tr>';--}}
+                {{--        }--}}
+                {{--        let table = $('#category-table');--}}
+                {{--        table.find('tbody').html(tr);--}}
+                {{--        let oTable = table.dataTable({--}}
+                {{--            "order":[],--}}
+                {{--        });--}}
+                {{--        oTable.fnDestroy();--}}
 
-                        table += tr;
-                        table += '</tbody>';
-                        table += '</table>';
+                {{--        table.find('tbody').html(tr);--}}
+                {{--        let oTable1 = table.dataTable({--}}
+                {{--            "order":[],--}}
+                {{--        });--}}
 
-                        $('#category-table-wrap').html(table);
-                        $('#category-table').dataTable();
-                    },
-                    error: function (data) {
-                        console.log('error retrieving data')
-                    }
-                });
+                {{--    },--}}
+                {{--    error: function (data) {--}}
+                {{--        console.log('error retrieving data')--}}
+                {{--    }--}}
+                {{--});--}}
             }
 
             /**
@@ -208,7 +221,7 @@
              * show popup form when user click update button
              */
             $(document).on('click','#category-table #btn_update',function () {
-                let id = $(this).parents('tr').find('td').eq(0).html();
+                let id = $(this).find('span').attr('id');
                 loadOneCategory(id);
             });
 

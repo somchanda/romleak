@@ -44,6 +44,9 @@ Route::post('post/category/update','Post@updateCategory')->name('post.category.u
 Route::post('post/category/add','Post@addCategory')->name('post.category.add');
 Route::post('post/category/delete','Post@deleteCategory')->name('post.category.delete');
 Route::get('post/category/fillCatSelect/{id}','Post@fillCatSelect')->name('post.category.fillCatSelect');
+Route::get('post/category/test/view',function (){
+    return view('admin.post.test');
+});
 
 Route::get('/home', 'HomeController@index')->name('home');
 

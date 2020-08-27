@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/MoneAdmin.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/plugins/Font-Awesome/css/font-awesome.css')}}" />
+    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{asset('css/custom.css')}}" />
     <!--END GLOBAL STYLES -->
 
@@ -515,6 +516,7 @@
     <script src="{{asset('assets/plugins/jquery-2.0.3.min.js')}}"></script>
     <script src="{{asset('assets/plugins/bootstrap/js/bootstrap.min.js')}}"></script>
     <script src="{{asset('assets/plugins/modernizr-2.6.2-respond-1.1.0.min.js')}}"></script>
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.7.2/dist/js/tabulator.min.js"></script>
     <script src="{{asset('assets/js/custom.js')}}"></script>
 {{--    <script src="{{asset('js/custom.js')}}"></script>--}}
 <!-- END GLOBAL SCRIPTS -->
