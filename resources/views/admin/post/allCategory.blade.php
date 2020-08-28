@@ -229,7 +229,7 @@
              * Delete when user click button delete
              */
             $(document).on('click','#category-table #btn_delete',function () {
-                const id = $(this).parents('tr').find('td').eq(0).html();
+                const id = $(this).find('span').attr('id');
                 confirmDialog('Do you want to delete?',function yes() {
                     deleteCategory(id);
                 },function no() {

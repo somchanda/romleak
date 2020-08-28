@@ -2,6 +2,7 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/public/assets/plugins/bootstrap/css/bootstrap_3.4.0.min.css" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/resources/views/admin/post/allCategory.blade.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/routes/web.php" charset="UTF-8" />
   </component>
 </project>

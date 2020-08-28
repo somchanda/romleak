@@ -19,7 +19,8 @@
     <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/MoneAdmin.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/plugins/Font-Awesome/css/font-awesome.css')}}" />
-    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator.min.css" rel="stylesheet">
+{{--    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator.min.css" rel="stylesheet">--}}
+    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator_modern.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{asset('css/custom.css')}}" />
     <!--END GLOBAL STYLES -->
 
