@@ -14,15 +14,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <![endif]-->
     <!-- GLOBAL STYLES -->
+    <link rel="stylesheet" href="{{asset('css/app.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/main.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/MoneAdmin.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/plugins/Font-Awesome/css/font-awesome.css')}}" />
+
 {{--    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator.min.css" rel="stylesheet">--}}
     <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator_modern.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{asset('css/custom.css')}}" />
     <!--END GLOBAL STYLES -->
+    <!-- GLOBAL SCRIPT-->
+
+    <!-- END GLOBAL SCRIPT-->
 
     <!-- PAGE LEVEL STYLES -->
     <link href="{{asset('assets/css/layout2.css')}}" rel="stylesheet" />
@@ -517,7 +522,9 @@
     <script src="{{asset('assets/plugins/jquery-2.0.3.min.js')}}"></script>
     <script src="{{asset('assets/plugins/bootstrap/js/bootstrap.min.js')}}"></script>
     <script src="{{asset('assets/plugins/modernizr-2.6.2-respond-1.1.0.min.js')}}"></script>
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.7.2/dist/js/tabulator.min.js"></script>
+{{--    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.7.2/dist/js/tabulator.min.js"></script>--}}
+    <script type="text/javascript" src="{{asset('assets/js/tabulator.min.js')}}"></script>
+    <script src="//cdn.ckeditor.com/4.16.0/full/ckeditor.js"></script>
     <script src="{{asset('assets/js/custom.js')}}"></script>
 {{--    <script src="{{asset('js/custom.js')}}"></script>--}}
 <!-- END GLOBAL SCRIPTS -->

@@ -111,61 +111,64 @@
              * Define load all category function
              */
             function loadCategory(){
-                let table = new Tabulator("#category-table", {
-                    layout:"fitColumns",
-                    ajaxURL:"/post/category/getAll",
-                    placeholder:"No Data Set",
-                    pagination: "local",
-                    paginationSize:10,
-                    paginationSizeSelector:[5,10,50,100],
-                    dataTree:true,
-                    dataTreeStartExpanded:true,
-                    columns:[
-                        {title:"Category", field:"category", responsive:0}, //never hide this column
-                        {title:"Slug", field:"slug", responsive:2}, //hide this column first
-                        {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
-                        {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
-                        {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
-                        {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
-                    ],
+                // let table = new Tabulator("#category-table", {
+                //     layout:"fitColumns",
+                //     ajaxURL:"/post/category/getAll",
+                //     placeholder:"No Data Set",
+                //     pagination: "local",
+                //     paginationSize:10,
+                //     paginationSizeSelector:[5,10,50,100],
+                //     dataTree:true,
+                //     dataTreeStartExpanded:true,
+                //     columns:[
+                //         {title:"Category", field:"category", responsive:0}, //never hide this column
+                //         {title:"Slug", field:"slug", responsive:2}, //hide this column first
+                //         {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
+                //         {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
+                //         {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                //         {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                //     ],
+                // });
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
                 });
-                {{--$.ajaxSetup({--}}
-                {{--    headers: {--}}
-                {{--        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')--}}
-                {{--    }--}}
-                {{--});--}}
-                {{--$.ajax({--}}
-                {{--    url: '{{url("/post/category/getAll")}}',--}}
-                {{--    type: 'get',--}}
-                {{--    dataType:'json',--}}
-                {{--    success:function (data) {--}}
-                {{--        let tr = '';--}}
-                {{--        for (const value of data) {--}}
-                {{--            tr +='<tr>'+--}}
-                {{--                '<td>'+value.id+'</td>'+--}}
-                {{--                '<td>'+value.category+'</td>'+--}}
-                {{--                '<td>'+value.slug+'</td>'+--}}
-                {{--                '<td>'+value.created_at+'</td>'+--}}
-                {{--                '<td><button id="btn_update" class="button-small" title="Update"><span class="glyphicon glyphicon-edit"></span></button> / <button id="btn_delete" class="button-small-danger" title="Delete"><span class="glyphicon glyphicon-trash"></span></button></td>'--}}
-                {{--                +'</tr>';--}}
-                {{--        }--}}
-                {{--        let table = $('#category-table');--}}
-                {{--        table.find('tbody').html(tr);--}}
-                {{--        let oTable = table.dataTable({--}}
-                {{--            "order":[],--}}
-                {{--        });--}}
-                {{--        oTable.fnDestroy();--}}
-
-                {{--        table.find('tbody').html(tr);--}}
-                {{--        let oTable1 = table.dataTable({--}}
-                {{--            "order":[],--}}
-                {{--        });--}}
-
-                {{--    },--}}
-                {{--    error: function (data) {--}}
-                {{--        console.log('error retrieving data')--}}
-                {{--    }--}}
-                {{--});--}}
+                $.ajax({
+                    url: '{{url("/post/category/getAll")}}',
+                    type: 'get',
+                    dataType:'json',
+                    success:function (data) {
+                        var table = new Tabulator("#category-table", {
+                            data:data,           //load row data from array
+                            layout:"fitColumns",      //fit columns to width of table
+                            responsiveLayout:"hide",  //hide columns that dont fit on the table
+                            tooltips:true,            //show tool tips on cells
+                            addRowPos:"top",          //when adding a new row, add it to the top of the table
+                            history:true,             //allow undo and redo actions on the table
+                            pagination:"local",       //paginate the data
+                            paginationSize:7,         //allow 7 rows per page of data
+                            movableColumns:true,      //allow column order to be changed
+                            resizableRows:true,       //allow row order to be changed
+                            initialSort:[             //set the initial sort order of the data
+                                {column:"category", dir:"asc"},
+                            ],
+                            dataTree: true,
+                            dataTreeStartExpanded:true,
+                            columns:[                 //define the table columns
+                                {title:"Category", field:"category", responsive:0}, //never hide this column
+                                {title:"Slug", field:"slug", responsive:2}, //hide this column first
+                                {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
+                                {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
+                                {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                                {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+                            ],
+                        });
+                    },
+                    error: function (data) {
+                        console.log('error retrieving data')
+                    }
+                });
             }
 
             /**

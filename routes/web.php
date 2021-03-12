@@ -48,5 +48,13 @@ Route::get('post/category/test/view',function (){
     return view('admin.post.test');
 });
 
+//Work with post
+Route::post('post/upload/image','Post@uploadImage')->name('post.upload.image');
+Route::post('post/save','Post@savePost')->name('post.save');
+
+
 Route::get('/home', 'HomeController@index')->name('home');
+Route::group(['prefix' => 'laravel-filemanager', 'middleware' => ['web', 'auth']], function () {
+    \UniSharp\LaravelFilemanager\Lfm::routes();
+});
 

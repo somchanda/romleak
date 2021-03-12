@@ -1,0 +1,1073 @@
+diff --git a/.idea/encodings.xml b/.idea/encodings.xml
+index c864185..0e48306 100644
+--- a/.idea/encodings.xml
++++ b/.idea/encodings.xml
+@@ -1,8 +1,20 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="Encoding">
++    <file url="file://$PROJECT_DIR$/.env" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/app/Helper/Helper.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/app/Http/Controllers/Post.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/app/helpers.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/composer.json" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/config/app.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/config/lfm.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/database/seeds/DatabaseSeeder.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/database/seeds/UsersTableSeederd.php" charset="UTF-8" />
+     <file url="file://$PROJECT_DIR$/public/assets/plugins/bootstrap/css/bootstrap_3.4.0.min.css" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/resources/views/admin/layout.blade.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/resources/views/admin/post/addPost.blade.php" charset="UTF-8" />
+     <file url="file://$PROJECT_DIR$/resources/views/admin/post/allCategory.blade.php" charset="UTF-8" />
+     <file url="file://$PROJECT_DIR$/routes/web.php" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/storage/app/log.log" charset="UTF-8" />
+   </component>
+ </project>
+\ No newline at end of file
+diff --git a/.idea/php.xml b/.idea/php.xml
+index 9d89cb9..3dffefe 100644
+--- a/.idea/php.xml
++++ b/.idea/php.xml
+@@ -85,6 +85,11 @@
+       <path value="$PROJECT_DIR$/vendor/jakub-onderka/php-console-color" />
+       <path value="$PROJECT_DIR$/vendor/jakub-onderka/php-console-highlighter" />
+       <path value="$PROJECT_DIR$/vendor/erusev/parsedown" />
++      <path value="$PROJECT_DIR$/vendor/guzzlehttp/psr7" />
++      <path value="$PROJECT_DIR$/vendor/psr/http-message" />
++      <path value="$PROJECT_DIR$/vendor/intervention/image" />
++      <path value="$PROJECT_DIR$/vendor/ralouphie/getallheaders" />
++      <path value="$PROJECT_DIR$/vendor/unisharp/laravel-filemanager" />
+     </include_path>
+   </component>
+   <component name="PhpProjectSharedConfiguration" php_language_level="7.1" />
+diff --git a/.idea/romleak.iml b/.idea/romleak.iml
+index bb97522..413cf97 100644
+--- a/.idea/romleak.iml
++++ b/.idea/romleak.iml
+@@ -19,7 +19,9 @@
+       <excludeFolder url="file://$MODULE_DIR$/vendor/fideloper/proxy" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/filp/whoops" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/fzaninotto/faker" />
++      <excludeFolder url="file://$MODULE_DIR$/vendor/guzzlehttp/psr7" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/hamcrest/hamcrest-php" />
++      <excludeFolder url="file://$MODULE_DIR$/vendor/intervention/image" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/jakub-onderka/php-console-color" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/jakub-onderka/php-console-highlighter" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/framework" />
+@@ -47,9 +49,11 @@
+       <excludeFolder url="file://$MODULE_DIR$/vendor/phpunit/php-token-stream" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/phpunit/phpunit" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/container" />
++      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/http-message" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/log" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/simple-cache" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/psy/psysh" />
++      <excludeFolder url="file://$MODULE_DIR$/vendor/ralouphie/getallheaders" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/ramsey/uuid" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/code-unit-reverse-lookup" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/comparator" />
+@@ -88,6 +92,7 @@
+       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/var-dumper" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/theseer/tokenizer" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/tijsverkoyen/css-to-inline-styles" />
++      <excludeFolder url="file://$MODULE_DIR$/vendor/unisharp/laravel-filemanager" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/vlucas/phpdotenv" />
+       <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
+     </content>
+diff --git a/app/Http/Controllers/Post.php b/app/Http/Controllers/Post.php
+index 8e688bc..adbf115 100644
+--- a/app/Http/Controllers/Post.php
++++ b/app/Http/Controllers/Post.php
+@@ -26,30 +26,40 @@ class Post extends Controller
+      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+      */
+     function addPost(){
+-        return view('admin.post.addPost');
++        $category ='';
++        $this->categoryCheckboxTree($category);
++        return view('admin.post.addPost', compact('category'));
+     }
+ 
+     /**
+-     * display all category page
+-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
++     * To display the category checkbox in add post form with indentation of sub category
++     * @param $div
++     * @param int $parent_id
++     * @param int $sub_mark
+      */
+-    function allCategory(){
+-        return view('admin.post.allCategory');
++    function categoryCheckboxTree(&$div, $parent_id = 0, $sub_mark = 0)
++    {
++        $cat = Category::where('parent_id', $parent_id)->orderBy('category')->get();
++        foreach ($cat as $value) {
++            $div .= '<div class="form-group" style="margin-left: ' . $sub_mark . 'px">
++                        <input type="checkbox" id="category' . $value->id . '" name="category[]" value="' . $value->id . '"><label for="category' . $value->id . '">' . $value->category . '</label>
++                    </div>';
++            $this->categoryCheckboxTree($div, $value->id, $sub_mark + 10);
++        }
+     }
+ 
+     /**
+      * display all category page
+-     * @return false|string
++     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+      */
+-//    function getAllCategory(){
+-//        $category = Category::all()->except(1);
+-//
+-//        return response()->json($category);
+-//    }
++    function allCategory(){
++        return view('admin.post.allCategory');
++    }
+ 
+     /**
+      * @param $id
+      * Get one category by their ID
++     * @return \Illuminate\Http\JsonResponse
+      */
+     function getOneCategory($id){
+         $category = Category::find($id);
+@@ -131,6 +141,13 @@ class Post extends Controller
+         return response()->json($arr);
+     }
+ 
++    /**
++     * @param $option
++     * @param $id
++     * @param int $parent_id
++     * @param string $sub_mark
++     * Use find category tree and has been called in fillCatSelect function
++     */
+     function categoryTree( &$option,$id, $parent_id = 0, $sub_mark = ''){
+         $cat = Category::where('parent_id', $parent_id)->where('id', '!=', $id)->orderBy('id')->get();
+         foreach ($cat as $value){
+@@ -139,15 +156,24 @@ class Post extends Controller
+         }
+     }
+ 
++    /**
++     * @param $id
++     * @return \Illuminate\Http\JsonResponse
++     * Use to create category tree in html select and return as json format
++     */
+     function fillCatSelect($id){
+         $option = '<option value="0">None</option>';
+-        $this->categoryTree($option,$id);
++        $this->categoryTree($option, $id);
+         $arr = ['option' => $option];
+         return response()->json($arr);
+     }
+ 
++    /**
++     * @return \Illuminate\Http\JsonResponse
++     * Get all category and return with json format with subtree
++     */
+     function getAllCategory(){
+-        $cats = Category::where('parent_id',0)->get();
++        $cats = Category::where('parent_id', 0)->get();
+         $categories = [];
+         foreach ($cats as $cat){
+             $categories[] = [
+@@ -167,6 +193,12 @@ class Post extends Controller
+         }
+         return response()->json($categories);
+     }
++
++    /**
++     * @param $id
++     * @return array
++     * Find sub category and has been called in getAllCategory function
++     */
+     function sub_category($id){
+         $cats = Category::where('parent_id',$id)->get();
+         $categories = [];
+@@ -225,4 +257,49 @@ class Post extends Controller
+         $table .= '</table>';
+         return response()->json($table);
+     }
++
++    /**
++     * @param Request $request
++     * To upload image when user brows image in add post
++     * @return \Illuminate\Http\JsonResponse
++     */
++    function uploadImage(Request $request){
++//        if($request->hasFile('upload')) {
++//            //get filename with extension
++//            $filenamewithextension = $request->file('upload')->getClientOriginalName();
++//
++//            //get filename without extension
++//            $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
++//
++//            //get file extension
++//            $extension = $request->file('upload')->getClientOriginalExtension();
++//
++//            //filename to store
++//            $filenametostore = auth()->id() . '_' . date('Y-m-d') . '_' . time() . '.'.$extension;
++//
++//            //Upload File
++////            $request->file('upload')->storeAs('public/uploads', $filenametostore);
++//            $des = public_path('images/posts');
++//            $request->file('upload')->move($des, $filenametostore);
++//
++//            $CKEditorFuncNum = $request->input('CKEditorFuncNum');
++//            $url = asset('images/posts/'.$filenametostore);
++//            $msg = 'Image successfully uploaded';
++//            $re = "<script>window.parent.CKEDITOR.tools.callFunction($CKEditorFuncNum, '$url', '$msg')</script>";
++//
++//            // Render HTML output
++//            @header('Content-type: text/html; charset=utf-8');
++//            echo $re;
++//        }
++        return response()->json(array('url' => "images/posts/tiger_1615431931.jpeg"));
++    }
++
++    function savePost(Request $request){
++        $validate = $request->validate([
++            'title' => 'required|min:3',
++            'slug' => 'required|min:3'
++        ]);
++
++//        return response()->json(['des' => $request->description, 'status' => $request->status, 'cat' => $request->category]);
++    }
+ }
+diff --git a/composer.json b/composer.json
+index 8e2b2d7..f39b17d 100644
+--- a/composer.json
++++ b/composer.json
+@@ -11,7 +11,8 @@
+         "php": "^7.1.3",
+         "fideloper/proxy": "^4.0",
+         "laravel/framework": "5.8.*",
+-        "laravel/tinker": "^1.0"
++        "laravel/tinker": "^1.0",
++        "unisharp/laravel-filemanager": "^2.2"
+     },
+     "require-dev": {
+         "beyondcode/laravel-dump-server": "^1.0",
+@@ -35,6 +36,9 @@
+         "psr-4": {
+             "App\\": "app/"
+         },
++        "files": [
++            "app/helpers.php"
++        ],
+         "classmap": [
+             "database/seeds",
+             "database/factories"
+diff --git a/composer.lock b/composer.lock
+index e4398b1..2db2326 100644
+--- a/composer.lock
++++ b/composer.lock
+@@ -4,7 +4,7 @@
+         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+         "This file is @generated automatically"
+     ],
+-    "content-hash": "94d4bf9ac7f4a933030e46a346ee2917",
++    "content-hash": "10a2d3dc3e1e3cb20754b3a5f272171c",
+     "packages": [
+         {
+             "name": "dnoegel/php-xdg-base-dir",
+@@ -419,6 +419,155 @@
+             ],
+             "time": "2020-06-23T01:36:47+00:00"
+         },
++        {
++            "name": "guzzlehttp/psr7",
++            "version": "1.7.0",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/guzzle/psr7.git",
++                "reference": "53330f47520498c0ae1f61f7e2c90f55690c06a3"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/guzzle/psr7/zipball/53330f47520498c0ae1f61f7e2c90f55690c06a3",
++                "reference": "53330f47520498c0ae1f61f7e2c90f55690c06a3",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.4.0",
++                "psr/http-message": "~1.0",
++                "ralouphie/getallheaders": "^2.0.5 || ^3.0.0"
++            },
++            "provide": {
++                "psr/http-message-implementation": "1.0"
++            },
++            "require-dev": {
++                "ext-zlib": "*",
++                "phpunit/phpunit": "~4.8.36 || ^5.7.27 || ^6.5.14 || ^7.5.20 || ^8.5.8 || ^9.3.10"
++            },
++            "suggest": {
++                "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.7-dev"
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "GuzzleHttp\\Psr7\\": "src/"
++                },
++                "files": [
++                    "src/functions_include.php"
++                ]
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Michael Dowling",
++                    "email": "mtdowling@gmail.com",
++                    "homepage": "https://github.com/mtdowling"
++                },
++                {
++                    "name": "Tobias Schultze",
++                    "homepage": "https://github.com/Tobion"
++                }
++            ],
++            "description": "PSR-7 message implementation that also provides common utility methods",
++            "keywords": [
++                "http",
++                "message",
++                "psr-7",
++                "request",
++                "response",
++                "stream",
++                "uri",
++                "url"
++            ],
++            "support": {
++                "issues": "https://github.com/guzzle/psr7/issues",
++                "source": "https://github.com/guzzle/psr7/tree/1.7.0"
++            },
++            "time": "2020-09-30T07:37:11+00:00"
++        },
++        {
++            "name": "intervention/image",
++            "version": "2.5.1",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/Intervention/image.git",
++                "reference": "abbf18d5ab8367f96b3205ca3c89fb2fa598c69e"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/Intervention/image/zipball/abbf18d5ab8367f96b3205ca3c89fb2fa598c69e",
++                "reference": "abbf18d5ab8367f96b3205ca3c89fb2fa598c69e",
++                "shasum": ""
++            },
++            "require": {
++                "ext-fileinfo": "*",
++                "guzzlehttp/psr7": "~1.1",
++                "php": ">=5.4.0"
++            },
++            "require-dev": {
++                "mockery/mockery": "~0.9.2",
++                "phpunit/phpunit": "^4.8 || ^5.7"
++            },
++            "suggest": {
++                "ext-gd": "to use GD library based image processing.",
++                "ext-imagick": "to use Imagick based image processing.",
++                "intervention/imagecache": "Caching extension for the Intervention Image library"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "2.4-dev"
++                },
++                "laravel": {
++                    "providers": [
++                        "Intervention\\Image\\ImageServiceProvider"
++                    ],
++                    "aliases": {
++                        "Image": "Intervention\\Image\\Facades\\Image"
++                    }
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "Intervention\\Image\\": "src/Intervention/Image"
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Oliver Vogel",
++                    "email": "oliver@olivervogel.com",
++                    "homepage": "http://olivervogel.com/"
++                }
++            ],
++            "description": "Image handling and manipulation library with support for Laravel integration",
++            "homepage": "http://image.intervention.io/",
++            "keywords": [
++                "gd",
++                "image",
++                "imagick",
++                "laravel",
++                "thumbnail",
++                "watermark"
++            ],
++            "support": {
++                "issues": "https://github.com/Intervention/image/issues",
++                "source": "https://github.com/Intervention/image/tree/master"
++            },
++            "time": "2019-11-02T09:15:47+00:00"
++        },
+         {
+             "name": "jakub-onderka/php-console-color",
+             "version": "v0.2",
+@@ -1258,6 +1407,59 @@
+             ],
+             "time": "2017-02-14T16:28:37+00:00"
+         },
++        {
++            "name": "psr/http-message",
++            "version": "1.0.1",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/php-fig/http-message.git",
++                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
++                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.3.0"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.0.x-dev"
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "Psr\\Http\\Message\\": "src/"
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "PHP-FIG",
++                    "homepage": "http://www.php-fig.org/"
++                }
++            ],
++            "description": "Common interface for HTTP messages",
++            "homepage": "https://github.com/php-fig/http-message",
++            "keywords": [
++                "http",
++                "http-message",
++                "psr",
++                "psr-7",
++                "request",
++                "response"
++            ],
++            "support": {
++                "source": "https://github.com/php-fig/http-message/tree/master"
++            },
++            "time": "2016-08-06T14:39:51+00:00"
++        },
+         {
+             "name": "psr/log",
+             "version": "1.1.3",
+@@ -1427,6 +1629,50 @@
+             ],
+             "time": "2019-12-06T14:19:43+00:00"
+         },
++        {
++            "name": "ralouphie/getallheaders",
++            "version": "3.0.3",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/ralouphie/getallheaders.git",
++                "reference": "120b605dfeb996808c31b6477290a714d356e822"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/ralouphie/getallheaders/zipball/120b605dfeb996808c31b6477290a714d356e822",
++                "reference": "120b605dfeb996808c31b6477290a714d356e822",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.6"
++            },
++            "require-dev": {
++                "php-coveralls/php-coveralls": "^2.1",
++                "phpunit/phpunit": "^5 || ^6.5"
++            },
++            "type": "library",
++            "autoload": {
++                "files": [
++                    "src/getallheaders.php"
++                ]
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Ralph Khattar",
++                    "email": "ralph.khattar@gmail.com"
++                }
++            ],
++            "description": "A polyfill for getallheaders.",
++            "support": {
++                "issues": "https://github.com/ralouphie/getallheaders/issues",
++                "source": "https://github.com/ralouphie/getallheaders/tree/develop"
++            },
++            "time": "2019-03-08T08:55:37+00:00"
++        },
+         {
+             "name": "ramsey/uuid",
+             "version": "3.9.3",
+@@ -3393,6 +3639,85 @@
+             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
+             "time": "2019-10-24T08:53:34+00:00"
+         },
++        {
++            "name": "unisharp/laravel-filemanager",
++            "version": "v2.2.0",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/UniSharp/laravel-filemanager.git",
++                "reference": "34202590a88ecfc598c6dc70dae8b306710d4df2"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/UniSharp/laravel-filemanager/zipball/34202590a88ecfc598c6dc70dae8b306710d4df2",
++                "reference": "34202590a88ecfc598c6dc70dae8b306710d4df2",
++                "shasum": ""
++            },
++            "require": {
++                "ext-exif": "*",
++                "ext-fileinfo": "*",
++                "illuminate/config": "5.4.* || 5.5.* || 5.6.* || 5.7.* || 5.8.* || ^6.0 || ^7.0 || ^8.0",
++                "illuminate/container": "5.4.* || 5.5.* || 5.6.* || 5.7.* || 5.8.* || ^6.0 || ^7.0 || ^8.0",
++                "illuminate/filesystem": "5.4.* || 5.5.* || 5.6.* || 5.7.* || 5.8.* || ^6.0 || ^7.0 || ^8.0",
++                "illuminate/http": "5.4.* || 5.5.* || 5.6.* || 5.7.* || 5.8.* || ^6.0 || ^7.0 || ^8.0",
++                "illuminate/support": "5.4.* || 5.5.* || 5.6.* || 5.7.* || 5.8.* || ^6.0 || ^7.0 || ^8.0",
++                "intervention/image": "2.*",
++                "php": ">=7.2.0"
++            },
++            "require-dev": {
++                "mockery/mockery": "^0.9.9",
++                "phpunit/phpunit": "^6.2",
++                "squizlabs/php_codesniffer": "^3.1"
++            },
++            "suggest": {
++                "ext-gd": "to use GD library based image processing.",
++                "ext-imagick": "to use Imagick based image processing."
++            },
++            "type": "library",
++            "extra": {
++                "laravel": {
++                    "providers": [
++                        "UniSharp\\LaravelFilemanager\\LaravelFilemanagerServiceProvider"
++                    ],
++                    "aliases": []
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "UniSharp\\LaravelFilemanager\\": "src/"
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Trevor Sawler",
++                    "email": "trevor.sawler@gmail.com"
++                },
++                {
++                    "name": "UniSharp Ltd.",
++                    "email": "opensource@unisharp.com"
++                }
++            ],
++            "description": "A file upload/editor intended for use with Laravel 5 to 6 and CKEditor / TinyMCE",
++            "keywords": [
++                "CKEditor",
++                "file",
++                "filemanager",
++                "image",
++                "laravel",
++                "manager",
++                "tinymce",
++                "upload"
++            ],
++            "support": {
++                "issues": "https://github.com/UniSharp/laravel-filemanager/issues",
++                "source": "https://github.com/UniSharp/laravel-filemanager/tree/v2.2.0"
++            },
++            "time": "2020-11-16T10:51:46+00:00"
++        },
+         {
+             "name": "vlucas/phpdotenv",
+             "version": "v3.6.6",
+@@ -5254,5 +5579,5 @@
+         "php": "^7.1.3"
+     },
+     "platform-dev": [],
+-    "plugin-api-version": "1.1.0"
++    "plugin-api-version": "2.0.0"
+ }
+diff --git a/config/app.php b/config/app.php
+index 8ba92e6..44d3e34 100644
+--- a/config/app.php
++++ b/config/app.php
+@@ -174,6 +174,8 @@ return [
+         // App\Providers\BroadcastServiceProvider::class,
+         App\Providers\EventServiceProvider::class,
+         App\Providers\RouteServiceProvider::class,
++        UniSharp\LaravelFilemanager\LaravelFilemanagerServiceProvider::class,
++        Intervention\Image\ImageServiceProvider::class,
+ 
+     ],
+ 
+@@ -225,6 +227,7 @@ return [
+         'URL' => Illuminate\Support\Facades\URL::class,
+         'Validator' => Illuminate\Support\Facades\Validator::class,
+         'View' => Illuminate\Support\Facades\View::class,
++        'Image' => Intervention\Image\Facades\Image::class,
+ 
+     ],
+ 
+diff --git a/database/migrations/2020_07_02_075526_create_posts_table.php b/database/migrations/2020_07_02_075526_create_posts_table.php
+index eea3242..977f68e 100644
+--- a/database/migrations/2020_07_02_075526_create_posts_table.php
++++ b/database/migrations/2020_07_02_075526_create_posts_table.php
+@@ -16,7 +16,7 @@ class CreatePostsTable extends Migration
+         Schema::create('posts', function (Blueprint $table) {
+             $table->bigIncrements('id');
+             $table->string('title');
+-            $table->string('description');
++            $table->longText('description');
+             $table->string('slug')->unique();
+             $table->string('feature');
+             $table->integer('category_id')->default(1);
+diff --git a/database/seeds/UsersTableSeederd.php b/database/seeds/UsersTableSeederd.php
+index 8cedbaf..c08c266 100644
+--- a/database/seeds/UsersTableSeederd.php
++++ b/database/seeds/UsersTableSeederd.php
+@@ -16,5 +16,10 @@ class UsersTableSeederd extends Seeder
+             'email'=>'somchanda18@gmail.com',
+             'password'=>Hash::make('12345678')
+         ]);
++        DB::table('users')->insert([
++            'name'=>'admin',
++            'email'=>'admin@gmail.com',
++            'password'=>Hash::make('12345678')
++        ]);
+     }
+ }
+diff --git a/public/assets/plugins/CLEditor1_4_3/jquery.cleditor.css b/public/assets/plugins/CLEditor1_4_3/jquery.cleditor.css
+index 62d55ad..185c387 100644
+--- a/public/assets/plugins/CLEditor1_4_3/jquery.cleditor.css
++++ b/public/assets/plugins/CLEditor1_4_3/jquery.cleditor.css
+@@ -6,7 +6,7 @@
+ .cleditorButton {float:left; width:24px; height:24px; margin:1px 0 1px 0; background: url('images/buttons.gif')}
+ .cleditorDisabled {opacity:0.3; filter:alpha(opacity=30)}
+ .cleditorDivider {float:left; width:1px; height:23px; margin:1px 0 1px 0; background:#CCC}
+-.cleditorPopup {border:solid 1px #999; background-color:white; color:#333333; position:absolute; font:10pt Arial,Verdana; cursor:default; z-index:10000}
++.cleditorPopup {border:solid 1px #999; background-color:white;color:#333333; position:absolute; font:10pt Arial,Verdana; cursor:default; z-index:10000}
+ .cleditorList div {padding:2px 4px 2px 4px}
+ .cleditorList p,
+ .cleditorList h1,
+diff --git a/public/css/custom.css b/public/css/custom.css
+index 6fae507..08db73c 100644
+--- a/public/css/custom.css
++++ b/public/css/custom.css
+@@ -1,3 +1,5 @@
++@import url(https://fonts.googleapis.com/css?family=Open+Sans);
++
+ div#success {
+     text-align: center;
+     box-shadow: 1px 1px 5px #455644;
+@@ -278,3 +280,47 @@ div#success {
+     margin-right: 5px;
+ }
+ 
++/*Checkboxes styles*/
++input[type="checkbox"] { display: none; }
++
++input[type="checkbox"] + label {
++    display: block;
++    position: relative;
++    padding-left: 35px;
++    margin-bottom: 20px;
++    font: 14px/20px 'Open Sans', Arial, sans-serif;
++    color: #0d70b7;
++    cursor: pointer;
++    -webkit-user-select: none;
++    -moz-user-select: none;
++    -ms-user-select: none;
++}
++
++input[type="checkbox"] + label:last-child { margin-bottom: 0; }
++
++input[type="checkbox"] + label:before {
++    content: '';
++    display: block;
++    width: 20px;
++    height: 20px;
++    border: 1px solid #6cc0e5;
++    position: absolute;
++    left: 0;
++    top: 0;
++    opacity: .6;
++    -webkit-transition: all .12s, border-color .08s;
++    transition: all .12s, border-color .08s;
++}
++
++input[type="checkbox"]:checked + label:before {
++    width: 10px;
++    top: -5px;
++    left: 5px;
++    border-radius: 0;
++    opacity: 1;
++    border-top-color: transparent;
++    border-left-color: transparent;
++    -webkit-transform: rotate(45deg);
++    transform: rotate(45deg);
++}
++
+diff --git a/resources/views/admin/layout.blade.php b/resources/views/admin/layout.blade.php
+index 9b26988..3a587d6 100644
+--- a/resources/views/admin/layout.blade.php
++++ b/resources/views/admin/layout.blade.php
+@@ -14,15 +14,20 @@
+     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+     <![endif]-->
+     <!-- GLOBAL STYLES -->
++    <link rel="stylesheet" href="{{asset('css/app.css')}}" />
+     <link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.css')}}" />
+     <link rel="stylesheet" href="{{asset('assets/css/main.css')}}" />
+     <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}" />
+     <link rel="stylesheet" href="{{asset('assets/css/MoneAdmin.css')}}" />
+     <link rel="stylesheet" href="{{asset('assets/plugins/Font-Awesome/css/font-awesome.css')}}" />
++
+ {{--    <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator.min.css" rel="stylesheet">--}}
+     <link href="https://unpkg.com/tabulator-tables@4.7.2/dist/css/tabulator_modern.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="{{asset('css/custom.css')}}" />
+     <!--END GLOBAL STYLES -->
++    <!-- GLOBAL SCRIPT-->
++
++    <!-- END GLOBAL SCRIPT-->
+ 
+     <!-- PAGE LEVEL STYLES -->
+     <link href="{{asset('assets/css/layout2.css')}}" rel="stylesheet" />
+@@ -517,7 +522,9 @@
+     <script src="{{asset('assets/plugins/jquery-2.0.3.min.js')}}"></script>
+     <script src="{{asset('assets/plugins/bootstrap/js/bootstrap.min.js')}}"></script>
+     <script src="{{asset('assets/plugins/modernizr-2.6.2-respond-1.1.0.min.js')}}"></script>
+-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.7.2/dist/js/tabulator.min.js"></script>
++{{--    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.7.2/dist/js/tabulator.min.js"></script>--}}
++    <script type="text/javascript" src="{{asset('assets/js/tabulator.min.js')}}"></script>
++    <script src="//cdn.ckeditor.com/4.16.0/full/ckeditor.js"></script>
+     <script src="{{asset('assets/js/custom.js')}}"></script>
+ {{--    <script src="{{asset('js/custom.js')}}"></script>--}}
+ <!-- END GLOBAL SCRIPTS -->
+diff --git a/resources/views/admin/post/addPost.blade.php b/resources/views/admin/post/addPost.blade.php
+index 8fbd461..eb8a574 100644
+--- a/resources/views/admin/post/addPost.blade.php
++++ b/resources/views/admin/post/addPost.blade.php
+@@ -1,14 +1,132 @@
+ @extends('admin.layout')
+ 
+ @section('content')
+-    <div id="content">
+-        <div class="inner" style="min-height: 700px;">
+-            <div class="row">
+-                <div class="col-lg-12">
+-                    <h1> Posts </h1>
++    <form method = "post" action="{{route('post.save')}}">
++        @csrf
++        <div id="content">
++            <div class="inner" style="min-height: 700px;">
++                <div class="row">
++                    <div class="col-lg-12">
++                        <h1> Posts </h1>
++                    </div>
++                </div>
++                <hr />
++                <div class="panel panel-default">
++                    <div class="panel-heading">
++                        Add New Post
++                    </div>
++                    <div class="panel-body">
++                        <div class="form-group">
++                            <label class="form-text">Title:</label>
++                        </div>
++                        <div class="form-group">
++                            <input type="text" name="title" id="title" value="{{old('title')}}" placeholder="Title..." class="form-control @error('title') is-invalid @enderror">
++                            @error('title')
++                            <div class="invalid-feedback">
++                                {{$message}}
++                            </div>
++                            @enderror
++                        </div>
++                        <div class="form-group">
++                            <label class="form-text">Slug:</label>
++                        </div>
++                        <div class="form-group">
++                            <input type="text" name="slug" value="{{old('slug')}}" id="slug" placeholder="Slug..." class="form-control @error('slug') is-invalid @enderror">
++                            @error('slug')
++                            <div class="invalid-feedback">
++                                {{$message}}
++                            </div>
++                            @enderror
++                        </div>
++                        <div class="form-group">
++                            <textarea name="description" id="description">{{old('description')}}</textarea>
++                        </div>
++                        <div class="form-group">
++                            <button type="submit" class="button-big">Save</button>
++                        </div>
++                    </div>
+                 </div>
+             </div>
+-            <hr />
+         </div>
++
++        <!-- RIGHT STRIP  SECTION -->
++        <div id="right">
++            <div class="well well-small">
++                <ul class="list-unstyled">
++                    <li>Publish &nbsp; : <span><input type="radio" name="status" checked value="1"></span></li>
++                    <li>Save as draft &nbsp; : <span><input type="radio" name="status" value="2"></span></li>
++{{--                    <li>Registrations &nbsp; : <span>3,000</span></li>--}}
++                </ul>
++            </div>
++            <div class="well well-small">
++{{--                <span>Profit</span><span class="pull-right"><small>20%</small></span>--}}
++
++{{--                <div class="progress mini">--}}
++{{--                    <div class="progress-bar progress-bar-info" style="width: 20%"></div>--}}
++{{--                </div>--}}
++{{--                <span>Sales</span><span class="pull-right"><small>40%</small></span>--}}
++
++{{--                <div class="progress mini">--}}
++{{--                    <div class="progress-bar progress-bar-success" style="width: 40%"></div>--}}
++{{--                </div>--}}
++{{--                <span>Pending</span><span class="pull-right"><small>60%</small></span>--}}
++
++{{--                <div class="progress mini">--}}
++{{--                    <div class="progress-bar progress-bar-warning" style="width: 60%"></div>--}}
++{{--                </div>--}}
++{{--                <span>Summary</span><span class="pull-right"><small>80%</small></span>--}}
++
++{{--                <div class="progress mini">--}}
++{{--                    <div class="progress-bar progress-bar-danger" style="width: 80%"></div>--}}
++{{--                </div>--}}
++<!--Accordion wrapper-->
++    <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
++
++        <!-- Accordion card -->
++        <div class="card">
++
++            <!-- Card header -->
++            <div class="card-header" role="tab" id="headingThree3">
++                <a class="collapsed" data-toggle="collapse" data-parent="#accordionEx" href="#collapseThree3"
++                   aria-expanded="false" aria-controls="collapseThree3">
++                    <h5 class="mb-0">
++                        Category &nbsp;<i class="icon-chevron-down"></i>
++                    </h5>
++                </a>
++            </div>
++
++            <!-- Card body -->
++            <div id="collapseThree3" class="collapse" role="tabpanel" aria-labelledby="headingThree3" data-parent="#accordionEx">
++                <div class="card-body">
++{{--                    <div class="form-group">--}}
++{{--                        <input type="checkbox" id="category{{$cate->id}}" name="category[]" value="{{$cate->id}}"><label for="category{{$cate->id}}">{{$cate->category}}</label>--}}
++{{--                    </div>--}}
++                    {!! $category !!}
++                </div>
++            </div>
++
++        </div>
++        <!-- Accordion card -->
++
+     </div>
++    <!-- Accordion wrapper -->
++            </div>
++        </div>
++        <!-- END RIGHT STRIP  SECTION -->
++    </form>
++@endsection
++@section('script')
++    <script>
++        {{--CKEDITOR.replace( 'description', {--}}
++        {{--    filebrowserUploadUrl: "{{route('post.upload.image', ['_token' => csrf_token() ])}}",--}}
++        {{--    filebrowserUploadMethod: 'form'--}}
++        {{--});--}}
++        var options = {
++            filebrowserImageBrowseUrl: '/laravel-filemanager?type=Images',
++            filebrowserImageUploadUrl: '/laravel-filemanager/upload?type=Images&_token={{csrf_token()}}',
++            filebrowserBrowseUrl: '/laravel-filemanager?type=Files',
++            filebrowserUploadUrl: '/laravel-filemanager/upload?type=Files&_token={{csrf_token()}}'
++        };
++        CKEDITOR.replace('description', options);
++    </script>
+ @endsection
+diff --git a/resources/views/admin/post/allCategory.blade.php b/resources/views/admin/post/allCategory.blade.php
+index bfff9ae..b5e25b2 100644
+--- a/resources/views/admin/post/allCategory.blade.php
++++ b/resources/views/admin/post/allCategory.blade.php
+@@ -111,61 +111,64 @@
+              * Define load all category function
+              */
+             function loadCategory(){
+-                let table = new Tabulator("#category-table", {
+-                    layout:"fitColumns",
+-                    ajaxURL:"/post/category/getAll",
+-                    placeholder:"No Data Set",
+-                    pagination: "local",
+-                    paginationSize:10,
+-                    paginationSizeSelector:[5,10,50,100],
+-                    dataTree:true,
+-                    dataTreeStartExpanded:true,
+-                    columns:[
+-                        {title:"Category", field:"category", responsive:0}, //never hide this column
+-                        {title:"Slug", field:"slug", responsive:2}, //hide this column first
+-                        {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
+-                        {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
+-                        {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+-                        {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
+-                    ],
++                // let table = new Tabulator("#category-table", {
++                //     layout:"fitColumns",
++                //     ajaxURL:"/post/category/getAll",
++                //     placeholder:"No Data Set",
++                //     pagination: "local",
++                //     paginationSize:10,
++                //     paginationSizeSelector:[5,10,50,100],
++                //     dataTree:true,
++                //     dataTreeStartExpanded:true,
++                //     columns:[
++                //         {title:"Category", field:"category", responsive:0}, //never hide this column
++                //         {title:"Slug", field:"slug", responsive:2}, //hide this column first
++                //         {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
++                //         {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
++                //         {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
++                //         {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
++                //     ],
++                // });
++                $.ajaxSetup({
++                    headers: {
++                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
++                    }
++                });
++                $.ajax({
++                    url: '{{url("/post/category/getAll")}}',
++                    type: 'get',
++                    dataType:'json',
++                    success:function (data) {
++                        var table = new Tabulator("#category-table", {
++                            data:data,           //load row data from array
++                            layout:"fitColumns",      //fit columns to width of table
++                            responsiveLayout:"hide",  //hide columns that dont fit on the table
++                            tooltips:true,            //show tool tips on cells
++                            addRowPos:"top",          //when adding a new row, add it to the top of the table
++                            history:true,             //allow undo and redo actions on the table
++                            pagination:"local",       //paginate the data
++                            paginationSize:7,         //allow 7 rows per page of data
++                            movableColumns:true,      //allow column order to be changed
++                            resizableRows:true,       //allow row order to be changed
++                            initialSort:[             //set the initial sort order of the data
++                                {column:"category", dir:"asc"},
++                            ],
++                            dataTree: true,
++                            dataTreeStartExpanded:true,
++                            columns:[                 //define the table columns
++                                {title:"Category", field:"category", responsive:0}, //never hide this column
++                                {title:"Slug", field:"slug", responsive:2}, //hide this column first
++                                {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
++                                {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
++                                {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},
++                                {title:"Delete", field:"btn_delete", hozAlign:"center",formatter:"html",width:90,headerSort:false},
++                            ],
++                        });
++                    },
++                    error: function (data) {
++                        console.log('error retrieving data')
++                    }
+                 });
+-                {{--$.ajaxSetup({--}}
+-                {{--    headers: {--}}
+-                {{--        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')--}}
+-                {{--    }--}}
+-                {{--});--}}
+-                {{--$.ajax({--}}
+-                {{--    url: '{{url("/post/category/getAll")}}',--}}
+-                {{--    type: 'get',--}}
+-                {{--    dataType:'json',--}}
+-                {{--    success:function (data) {--}}
+-                {{--        let tr = '';--}}
+-                {{--        for (const value of data) {--}}
+-                {{--            tr +='<tr>'+--}}
+-                {{--                '<td>'+value.id+'</td>'+--}}
+-                {{--                '<td>'+value.category+'</td>'+--}}
+-                {{--                '<td>'+value.slug+'</td>'+--}}
+-                {{--                '<td>'+value.created_at+'</td>'+--}}
+-                {{--                '<td><button id="btn_update" class="button-small" title="Update"><span class="glyphicon glyphicon-edit"></span></button> / <button id="btn_delete" class="button-small-danger" title="Delete"><span class="glyphicon glyphicon-trash"></span></button></td>'--}}
+-                {{--                +'</tr>';--}}
+-                {{--        }--}}
+-                {{--        let table = $('#category-table');--}}
+-                {{--        table.find('tbody').html(tr);--}}
+-                {{--        let oTable = table.dataTable({--}}
+-                {{--            "order":[],--}}
+-                {{--        });--}}
+-                {{--        oTable.fnDestroy();--}}
+-
+-                {{--        table.find('tbody').html(tr);--}}
+-                {{--        let oTable1 = table.dataTable({--}}
+-                {{--            "order":[],--}}
+-                {{--        });--}}
+-
+-                {{--    },--}}
+-                {{--    error: function (data) {--}}
+-                {{--        console.log('error retrieving data')--}}
+-                {{--    }--}}
+-                {{--});--}}
+             }
+ 
+             /**
+diff --git a/routes/web.php b/routes/web.php
+index af0f235..405ae2d 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -48,5 +48,13 @@ Route::get('post/category/test/view',function (){
+     return view('admin.post.test');
+ });
+ 
++//Work with post
++Route::post('post/upload/image','Post@uploadImage')->name('post.upload.image');
++Route::post('post/save','Post@savePost')->name('post.save');
++
++
+ Route::get('/home', 'HomeController@index')->name('home');
++Route::group(['prefix' => 'laravel-filemanager', 'middleware' => ['web', 'auth']], function () {
++    \UniSharp\LaravelFilemanager\Lfm::routes();
++});
+ 

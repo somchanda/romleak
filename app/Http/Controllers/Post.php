@@ -26,7 +26,26 @@ class Post extends Controller
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     function addPost(){
-        return view('admin.post.addPost');
+        $category ='';
+        $this->categoryCheckboxTree($category);
+        return view('admin.post.addPost', compact('category'));
+    }
+
+    /**
+     * To display the category checkbox in add post form with indentation of sub category
+     * @param $div
+     * @param int $parent_id
+     * @param int $sub_mark
+     */
+    function categoryCheckboxTree(&$div, $parent_id = 0, $sub_mark = 0)
+    {
+        $cat = Category::where('parent_id', $parent_id)->orderBy('category')->get();
+        foreach ($cat as $value) {
+            $div .= '<div class="form-group" style="margin-left: ' . $sub_mark . 'px">
+                        <input type="checkbox" id="category' . $value->id . '" name="category[]" value="' . $value->id . '"><label for="category' . $value->id . '">' . $value->category . '</label>
+                    </div>';
+            $this->categoryCheckboxTree($div, $value->id, $sub_mark + 10);
+        }
     }
 
     /**
@@ -38,18 +57,9 @@ class Post extends Controller
     }
 
     /**
-     * display all category page
-     * @return false|string
-     */
-//    function getAllCategory(){
-//        $category = Category::all()->except(1);
-//
-//        return response()->json($category);
-//    }
-
-    /**
      * @param $id
      * Get one category by their ID
+     * @return \Illuminate\Http\JsonResponse
      */
     function getOneCategory($id){
         $category = Category::find($id);
@@ -131,6 +141,13 @@ class Post extends Controller
         return response()->json($arr);
     }
 
+    /**
+     * @param $option
+     * @param $id
+     * @param int $parent_id
+     * @param string $sub_mark
+     * Use find category tree and has been called in fillCatSelect function
+     */
     function categoryTree( &$option,$id, $parent_id = 0, $sub_mark = ''){
         $cat = Category::where('parent_id', $parent_id)->where('id', '!=', $id)->orderBy('id')->get();
         foreach ($cat as $value){
@@ -139,15 +156,24 @@ class Post extends Controller
         }
     }
 
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     * Use to create category tree in html select and return as json format
+     */
     function fillCatSelect($id){
         $option = '<option value="0">None</option>';
-        $this->categoryTree($option,$id);
+        $this->categoryTree($option, $id);
         $arr = ['option' => $option];
         return response()->json($arr);
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     * Get all category and return with json format with subtree
+     */
     function getAllCategory(){
-        $cats = Category::where('parent_id',0)->get();
+        $cats = Category::where('parent_id', 0)->get();
         $categories = [];
         foreach ($cats as $cat){
             $categories[] = [
@@ -167,6 +193,12 @@ class Post extends Controller
         }
         return response()->json($categories);
     }
+
+    /**
+     * @param $id
+     * @return array
+     * Find sub category and has been called in getAllCategory function
+     */
     function sub_category($id){
         $cats = Category::where('parent_id',$id)->get();
         $categories = [];
@@ -224,5 +256,50 @@ class Post extends Controller
         $table .= '</tbody>';
         $table .= '</table>';
         return response()->json($table);
+    }
+
+    /**
+     * @param Request $request
+     * To upload image when user brows image in add post
+     * @return \Illuminate\Http\JsonResponse
+     */
+    function uploadImage(Request $request){
+//        if($request->hasFile('upload')) {
+//            //get filename with extension
+//            $filenamewithextension = $request->file('upload')->getClientOriginalName();
+//
+//            //get filename without extension
+//            $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+//
+//            //get file extension
+//            $extension = $request->file('upload')->getClientOriginalExtension();
+//
+//            //filename to store
+//            $filenametostore = auth()->id() . '_' . date('Y-m-d') . '_' . time() . '.'.$extension;
+//
+//            //Upload File
+////            $request->file('upload')->storeAs('public/uploads', $filenametostore);
+//            $des = public_path('images/posts');
+//            $request->file('upload')->move($des, $filenametostore);
+//
+//            $CKEditorFuncNum = $request->input('CKEditorFuncNum');
+//            $url = asset('images/posts/'.$filenametostore);
+//            $msg = 'Image successfully uploaded';
+//            $re = "<script>window.parent.CKEDITOR.tools.callFunction($CKEditorFuncNum, '$url', '$msg')</script>";
+//
+//            // Render HTML output
+//            @header('Content-type: text/html; charset=utf-8');
+//            echo $re;
+//        }
+        return response()->json(array('url' => "images/posts/tiger_1615431931.jpeg"));
+    }
+
+    function savePost(Request $request){
+        $validate = $request->validate([
+            'title' => 'required|min:3',
+            'slug' => 'required|min:3'
+        ]);
+
+//        return response()->json(['des' => $request->description, 'status' => $request->status, 'cat' => $request->category]);
     }
 }
