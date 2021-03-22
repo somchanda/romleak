@@ -14,8 +14,9 @@ class PostSeeder extends Seeder
         DB::table('posts')->insert([
            'title' =>  'This is post 1 title',
             'description' => 'This is post 1 description',
-            'slug' => 'post-1-slug',
-            'feature' => 'post-noimage.jpg'
+            'featurePath' => 'post-noimage.jpg',
+            'user_id' => 1,
+            'status' => 1
         ]);
     }
 }

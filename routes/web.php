@@ -51,6 +51,8 @@ Route::get('post/category/test/view',function (){
 //Work with post
 Route::post('post/upload/image','Post@uploadImage')->name('post.upload.image');
 Route::post('post/save','Post@savePost')->name('post.save');
+Route::post('post/update','Post@updatePost')->name('post.update');
+Route::get('post/edit/{id}', 'Post@edit')->name('post.edit');
 
 
 Route::get('/home', 'HomeController@index')->name('home');

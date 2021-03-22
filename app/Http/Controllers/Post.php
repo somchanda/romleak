@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Category;
+use App\PostJoinCate;
+use App\Rules\MultipleFeature;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Validator,Redirect,Response;
 
 class Post extends Controller
@@ -27,24 +33,30 @@ class Post extends Controller
      */
     function addPost(){
         $category ='';
-        $this->categoryCheckboxTree($category);
+        $cate_id =  old('category') !== null ? old('category') : [];
+        $this->categoryCheckboxTree($category, $cate_id);
         return view('admin.post.addPost', compact('category'));
     }
 
     /**
      * To display the category checkbox in add post form with indentation of sub category
      * @param $div
+     * @param array $cate_id
      * @param int $parent_id
      * @param int $sub_mark
      */
-    function categoryCheckboxTree(&$div, $parent_id = 0, $sub_mark = 0)
+    function categoryCheckboxTree(&$div, $cate_id = [], $parent_id = 0, $sub_mark = 0)
     {
         $cat = Category::where('parent_id', $parent_id)->orderBy('category')->get();
         foreach ($cat as $value) {
+            $checked = '';
+            if(in_array($value->id, $cate_id)){
+                $checked = 'checked';
+            }
             $div .= '<div class="form-group" style="margin-left: ' . $sub_mark . 'px">
-                        <input type="checkbox" id="category' . $value->id . '" name="category[]" value="' . $value->id . '"><label for="category' . $value->id . '">' . $value->category . '</label>
+                        <input type="checkbox" '. $checked .' id="category' . $value->id . '" name="category[]" value="' . $value->id . '"><label for="category' . $value->id . '">' . $value->category . '</label>
                     </div>';
-            $this->categoryCheckboxTree($div, $value->id, $sub_mark + 10);
+            $this->categoryCheckboxTree($div, $cate_id, $value->id, $sub_mark + 10);
         }
     }
 
@@ -174,13 +186,18 @@ class Post extends Controller
      */
     function getAllCategory(){
         $cats = Category::where('parent_id', 0)->get();
+        $user = User::all()->toArray();
         $categories = [];
         foreach ($cats as $cat){
+            $user_filtered = array_filter($user, function ($u) use ($cat) {
+                return $u['id'] == $cat->user_id;
+            });
             $categories[] = [
               'category' => $cat->category,
                 'slug' => $cat->slug,
-                'created_at' => $cat->created_at->format('d/m/Y'),
-                'updated_at' => $cat->updated_at->format('d/m/Y'),
+                'user' => array_shift($user_filtered)['name'],
+                'created_at' => $cat->created_at->format('d/M/Y'),
+                'updated_at' => $cat->updated_at->format('d/M/Y'),
                 '_children' => $this->sub_category($cat->id),
                 'btn_update' => '<button id="btn_update" class="button-small" title="Update"><span id="'.$cat->id.'" class="glyphicon glyphicon-edit"></span></button>',
                 'btn_delete' => '<button id="btn_delete" class="button-small-danger" title="Delete"><span id="'.$cat->id.'" class="glyphicon glyphicon-trash"></span></button>'
@@ -201,13 +218,18 @@ class Post extends Controller
      */
     function sub_category($id){
         $cats = Category::where('parent_id',$id)->get();
+        $user = User::all()->toArray();
         $categories = [];
         foreach ($cats as $cat){
+            $user_filtered = array_filter($user, function ($u) use ($cat) {
+                return $u['id'] == $cat->user_id;
+            });
             $categories[] = [
                 'category' => $cat->category,
                 'slug' => $cat->slug,
-                'created_at' => $cat->created_at->format('d/m/Y'),
-                'updated_at' => $cat->updated_at->format('d/m/Y'),
+                'user' => array_shift($user_filtered)['name'],
+                'created_at' => $cat->created_at->format('d/M/Y'),
+                'updated_at' => $cat->updated_at->format('d/M/Y'),
                 '_children' => $this->sub_category($cat->id),
                 'btn_update' => '<button id="btn_update" class="button-small" title="Update"><span id="'.$cat->id.'" class="glyphicon glyphicon-edit"></span></button>',
                 'btn_delete' => '<button id="btn_delete" class="button-small-danger" title="Delete"><span id="'.$cat->id.'" class="glyphicon glyphicon-trash"></span></button>'
@@ -294,12 +316,60 @@ class Post extends Controller
         return response()->json(array('url' => "images/posts/tiger_1615431931.jpeg"));
     }
 
+    /**
+     * @param Request $request
+     * @return string
+     * Save post to database
+     */
     function savePost(Request $request){
         $validate = $request->validate([
-            'title' => 'required|min:3',
-            'slug' => 'required|min:3'
+            'title' => 'required|min:3|max:255',
+            'featurePath' => ['required', new MultipleFeature()]
         ]);
+        try {
+            DB::beginTransaction();
+            $post = new \App\Post();
+            $post->setAttribute('title', $request['title']);
+            $post->setAttribute('description', $request['description']);
+            $post->setAttribute('user_id', Auth::user()->id);
+            $post->setAttribute('featurePath', $request['featurePath']);
+            $post->setAttribute('status', $request['status']);
+            $post->push();
+            if ($request['category'] == null) {
+                $request['category'] = array(1);
+            }
+            foreach ($request['category'] as $cate_id) {
+                $post_join_cate = new PostJoinCate();
+                $post_join_cate->setAttribute('category_id', $cate_id);
+                $post_join_cate->setAttribute('post_id', $post->id);
+                $post_join_cate->push();
+            }
+            DB::commit();
+            return redirect()->route('post/edit', ['id' => $post->id]);
+        } catch (\Throwable $exception) {
+            log2($exception->getMessage());
+            DB::rollBack();
+            return 'Internal error';
+        }
+    }
 
-//        return response()->json(['des' => $request->description, 'status' => $request->status, 'cat' => $request->category]);
+    /**
+     * @param $id
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    function edit($id){
+        $post = \App\Post::find($id);
+        $post_join_cate = PostJoinCate::where('post_id', '=', $id)->get('category_id');
+        $cate_id = [];
+        foreach ($post_join_cate as $value){
+            $cate_id [] = $value->category_id;
+        }
+        $category ='';
+        $this->categoryCheckboxTree($category, $cate_id);
+        return view('admin.post.editPost', compact('category', 'post'));
+    }
+
+    function updatePost(Request $request){
+        return response()->json(\request());
     }
 }

@@ -158,6 +158,7 @@
                             columns:[                 //define the table columns
                                 {title:"Category", field:"category", responsive:0}, //never hide this column
                                 {title:"Slug", field:"slug", responsive:2}, //hide this column first
+                                {title:"Author", field:"user"}, //hide this column first
                                 {title:"Date created", field:"created_at", hozAlign:"center", sorter:"date"},
                                 {title:"Date updated", field:"updated_at", hozAlign:"center", sorter:"date"},
                                 {title:"Update", field:"btn_update", hozAlign:"center",formatter:"html",width:90,headerSort:false},

@@ -8,7 +8,7 @@
                     <h1> Posts </h1>
                 </div>
             </div>
-            <hr />
+            <hr/>
 
         </div>
     </div>

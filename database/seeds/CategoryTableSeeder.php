@@ -14,37 +14,44 @@ class CategoryTableSeeder extends Seeder
         DB::table('categories')->insert([
             'id' =>'1',
             'category' => 'Uncategorized',
-            'slug' =>'uncategorized'
+            'slug' =>'uncategorized',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
            'category'=>'Technology',
-            'slug'=>'technology'
+            'slug'=>'technology',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
             'category'=>'Sport',
-            'slug'=>'sport'
+            'slug'=>'sport',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
             'category'=>'Life',
-            'slug'=>'life'
+            'slug'=>'life',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
             'category'=>'social',
-            'slug'=>'social'
+            'slug'=>'social',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
             'category'=>'komsan',
-            'slug'=>'komsan'
+            'slug'=>'komsan',
+            'user_id' => 1
         ]);
 
         DB::table('categories')->insert([
             'category'=>'entertainment',
-            'slug'=>'entertainment'
+            'slug'=>'entertainment',
+            'user_id' => 1
         ]);
     }
 }

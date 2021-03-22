@@ -16,7 +16,9 @@ class CreatePostJoinCatesTable extends Migration
         Schema::create('post_join_cates', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('category_id');
-            $table->integer('post_id');
+            $table->unsignedBigInteger('post_id');
+            $table->foreign('post_id')->references('id')->on('posts');
+            $table->foreign('category_id')->references('id')->on('categories');
             $table->timestamps();
         });
     }

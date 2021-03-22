@@ -16,23 +16,17 @@
                         Add New Post
                     </div>
                     <div class="panel-body">
+                        @error('featurePath')
+                        <div class="alert alert-danger">
+                            {{$message}}
+                        </div>
+                        @enderror
                         <div class="form-group">
                             <label class="form-text">Title:</label>
                         </div>
                         <div class="form-group">
                             <input type="text" name="title" id="title" value="{{old('title')}}" placeholder="Title..." class="form-control @error('title') is-invalid @enderror">
                             @error('title')
-                            <div class="invalid-feedback">
-                                {{$message}}
-                            </div>
-                            @enderror
-                        </div>
-                        <div class="form-group">
-                            <label class="form-text">Slug:</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="slug" value="{{old('slug')}}" id="slug" placeholder="Slug..." class="form-control @error('slug') is-invalid @enderror">
-                            @error('slug')
                             <div class="invalid-feedback">
                                 {{$message}}
                             </div>
@@ -107,6 +101,40 @@
 
         </div>
         <!-- Accordion card -->
+        <!-- Accordion card -->
+        <div class="card">
+
+            <!-- Card header -->
+            <div class="card-header" role="tab" id="headingThree3">
+                <a class="collapsed" data-toggle="collapse" data-parent="#accordionEx" href="#feature"
+                   aria-expanded="false" aria-controls="feature">
+                    <h5 class="mb-0">
+                        Feature &nbsp;<i class="icon-chevron-down"></i>
+                    </h5>
+                </a>
+            </div>
+
+            <!-- Card body -->
+            <div id="feature" class="collapse" role="tabpanel" aria-labelledby="headingThree3" data-parent="#accordionEx">
+                <div class="card-body">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <a id="feature-file-manager" data-input="feature-thumbnail" data-preview="feature-view" class="btn btn-block">
+                                Choose
+                            </a>
+                        </span>
+                        <input id="feature-thumbnail" class="form-control" value="{{old('featurePath')}}" type="hidden" name="featurePath">
+                    </div>
+                    <div id="feature-view" style="margin: 1px 2px; max-height:200px;">
+                        @if(old('featurePath') and !\Illuminate\Support\Str::contains(old('featurePath'), ','))
+                            <img style="height: 5rem;" src="{{old('featurePath')}}">
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Accordion card -->
 
     </div>
     <!-- Accordion wrapper -->
@@ -116,6 +144,7 @@
     </form>
 @endsection
 @section('script')
+    <script src="/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
     <script>
         {{--CKEDITOR.replace( 'description', {--}}
         {{--    filebrowserUploadUrl: "{{route('post.upload.image', ['_token' => csrf_token() ])}}",--}}
@@ -128,5 +157,6 @@
             filebrowserUploadUrl: '/laravel-filemanager/upload?type=Files&_token={{csrf_token()}}'
         };
         CKEDITOR.replace('description', options);
+        $('#feature-file-manager').filemanager('image');
     </script>
 @endsection
